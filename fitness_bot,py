@@ -1,0 +1,42 @@
+import logging
+from telegram import Update
+from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
+from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.write_api import SYNCHRONOUS
+
+# --- CONFIGURATION (FILL THESE IN) ---
+TELEGRAM_TOKEN = "####
+INFLUX_URL = "####
+INFLUX_TOKEN = "####
+ORG = "myhomelab"
+BUCKET = "fitness_stats"
+
+# Initialize InfluxDB Client
+client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
+write_api = client.write_api(write_options=SYNCHRONOUS)
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        # We expect input like: "500 45" (Calories Protein)
+        text = update.message.text
+        parts = text.split()
+        cals = float(parts[0])
+        prot = float(parts[1])
+
+        # Create the data point
+        point = Point("nutrition") \
+            .tag("user", "dineshvar") \
+            .field("calories", cals) \
+            .field("protein", prot)
+
+        write_api.write(bucket=BUCKET, org=ORG, record=point)
+        
+        await update.message.reply_text(f"🚀 Logged to InfluxDB!\n🔥 Calories: {cals}\n🍗 Protein: {prot}g")
+    except Exception as e:
+        await update.message.reply_text("❌ Error! Send numbers only: [Cals] [Protein]\nExample: 350 40")
+
+if __name__ == '__main__':
+    app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+    print("Bot is listening for your macros...")
+    app.run_polling()
