@@ -9,7 +9,7 @@ services:
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=dineshvar
-      - DOCKER_INFLUXDB_INIT_PASSWORD=YourSecurePassword123  # Change this!
+      - DOCKER_INFLUXDB_INIT_PASSWORD=######  # Change this!
       - DOCKER_INFLUXDB_INIT_ORG=myhomelab
       - DOCKER_INFLUXDB_INIT_BUCKET=fitness_stats
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-token-123
